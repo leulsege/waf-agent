@@ -1,0 +1,45 @@
+# Ignore other project directories
+modsecurity-ui/
+modsecurity-back-end/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv
+
+# Keys (NEVER commit these!)
+keys/
+*.pem
+*.key
+
+# Environment
+.env
+.env.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Node modules (for other projects)
+node_modules/
+
+# Build outputs
+dist/
+build/
+*.egg-info/

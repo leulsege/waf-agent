@@ -6,14 +6,33 @@ Handles encrypted communication and nginx config updates
 """
 
 import os
+import sys
 import logging
 import traceback
+from pathlib import Path
+
+# Add parent directory to path to allow imports when running directly
+# This needs to happen before any relative imports
+_file_path = Path(__file__).resolve()
+_parent_dir = _file_path.parent.parent
+
+# If we're in a src directory and parent is not in path, add it
+if _file_path.parent.name == "src" and str(_parent_dir) not in sys.path:
+    sys.path.insert(0, str(_parent_dir))
+
 from fastapi import FastAPI, HTTPException, Security
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel
 from typing import List, Optional
-from .waf_toggle import toggle_waf_for_domain, get_waf_status_for_domain
-from .ip_block import ban_unban_ip, get_ip_block_status
+
+# Try relative imports first (when run as module), fallback to absolute (when run directly)
+try:
+    from .waf_toggle import toggle_waf_for_domain, get_waf_status_for_domain
+    from .ip_block import ban_unban_ip, get_ip_block_status
+except ImportError:
+    # Fallback to absolute imports when running directly
+    from src.waf_toggle import toggle_waf_for_domain, get_waf_status_for_domain
+    from src.ip_block import ban_unban_ip, get_ip_block_status
 
 # Configure logging
 logging.basicConfig(
@@ -175,10 +194,22 @@ if __name__ == "__main__":
     if os.geteuid() != 0:
         logger.warning("WARNING: Not running as root. Nginx operations may fail.")
     
-    uvicorn.run(
-        "src.main:app",
-        host="0.0.0.0",
-        port=8080,
-        log_level="info"
-    )
+    # When running directly, we can't use module path, so run the app directly
+    # Otherwise, use module path for uvicorn
+    if Path(__file__).parent.name == "src" and str(Path(__file__).parent.parent) in sys.path:
+        # Running from src directory with parent in path - use module path
+        uvicorn.run(
+            "src.main:app",
+            host="0.0.0.0",
+            port=8080,
+            log_level="info"
+        )
+    else:
+        # Running directly - use app object directly
+        uvicorn.run(
+            app,
+            host="0.0.0.0",
+            port=8080,
+            log_level="info"
+        )
 
