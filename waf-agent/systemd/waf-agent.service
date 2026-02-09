@@ -1,0 +1,21 @@
+[Unit]
+Description=WAF Agent Service
+After=network.target nginx.service
+Requires=nginx.service
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/waf-agent
+Environment="PATH=/usr/bin:/usr/local/bin"
+Environment="WAF_AGENT_PRIVATE_KEY=/etc/waf-agent/private_key.pem"
+Environment="WAF_AGENT_PUBLIC_KEY=/etc/waf-agent/public_key.pem"
+ExecStart=/opt/waf-agent/venv/bin/python -m src.main
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
+
